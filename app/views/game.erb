@@ -1,90 +1,76 @@
-<!DOCTYPE html>
-<html>
+<h1 id="game" data-game-id=<%= @game.id %>>Welcome to Javascript Racer</h1>
 
-<head>
-<title>Javascript Racer</title>
-<link rel="stylesheet" type="text/css" href="normalize.css">
-<link rel="stylesheet" type="text/css" href="application.css">
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script type="text/javascript" src="application.js"></script>
+<p><%= @player1.name %></p>
+<table class="racer_table">
+  <tr id="row1">
+    <% 30.times do %>
+      <td></td>
+    <% end %>
+  </tr>
+  <tr id="row2">
+    <% 30.times do %>
+      <td></td>
+    <% end %>
+  </tr>
+</table>
+<p><%= @player2.name %></p>
 
-</head>
+<script>
 
-<body>
-  <table class="racer_table">
+  $(document).ready(function() {
+    $("tr#row1 td:first").addClass("active");
+    $("tr#row2 td:first").addClass("active");
+    // Move player's position by changing the td active class
+    function movePlayer(playerNum) {
+      var playerPosition = $("#row" + playerNum + " .active").index();
+      $("#row" + playerNum + " td").eq(playerPosition).removeClass("active");
+      $("#row"+ playerNum + " td").eq(playerPosition + 1).addClass("active");
+    }
 
-    <tr id="player1_strip">
-      <td>Player1</td>
-      <td id="1_1" class="active"></td>
-      <td id="1_2"></td>
-      <td id="1_3"></td>
-      <td id="1_4"></td>
-      <td id="1_5"></td>
-      <td id="1_6"></td>
-      <td id="1_7"></td>
-      <td id="1_8"></td>
-      <td id="1_9"></td>
-      <td id="1_10"></td>
-      <td id="1_11"></td>
-      <td id="1_12"></td>
-      <td id="1_13"></td>
-      <td id="1_14"></td>
-      <td id="1_15"></td>
-      <td id="1_16"></td>
-      <td id="1_17"></td>
-      <td id="1_18"></td>
-      <td id="1_19"></td>
-      <td id="1_20"></td>
-      <td id="1_21"></td>
-      <td id="1_22"></td>
-      <td id="1_23"></td>
-      <td id="1_24"></td>
-      <td id="1_25"></td>
-      <td id="1_26"></td>
-      <td id="1_27"></td>
-      <td id="1_28"></td>
-      <td id="1_29"></td>
-      <td id="1_30"></td>
-    </tr>
+    // Check if one player has won
+    function hasWon(playerNum) {
+      var position = $("#row" + playerNum + " .active").index();
+      if (position + 1 === $("#row" + playerNum + " td").length) {
+        return true
+      }
+    }
 
-    <tr id="player2_strip">
-      <td>Player2</td>
-      <td id="2_1" class="active"></td>
-      <td id="2_2" ></td>
-      <td id="2_3" ></td>
-      <td id="2_4" ></td>
-      <td id="2_5" ></td>
-      <td id="2_6" ></td>
-      <td id="2_7" ></td>
-      <td id="2_8"></td>
-      <td id="2_9"></td>
-      <td id="2_10"></td>
-      <td id="2_11"></td>
-      <td id="2_12"></td>
-      <td id="2_13"></td>
-      <td id="2_14"></td>
-      <td id="2_15"></td>
-      <td id="2_16"></td>
-      <td id="2_17"></td>
-      <td id="2_18"></td>
-      <td id="2_19"></td>
-      <td id="2_20"></td>
-      <td id="2_21"></td>
-      <td id="2_22"></td>
-      <td id="2_23"></td>
-      <td id="2_24"></td>
-      <td id="2_25"></td>
-      <td id="2_26"></td>
-      <td id="2_27"></td>
-      <td id="2_28"></td>
-      <td id="2_29"></td>
-      <td id="2_30"></td>
-    </tr>
-  </table>
+    // Send the winner information to ActiveRecord
+    function submitWinner(playerNum) {
+      var gameId = $("#game").data("game-id");
 
-  Click here to see your result
-  <a href="/games/result"></a>
-</body>
-</html>
+      var loser;
+      playerNum === 1 ? loser = 2 : loser = 1;
+      var loserIndex = $("#row" + loser + " .active").index();
 
+      $.ajax({
+        type: "PUT",
+        url: "/games/" + gameId,
+        data: {"game_id": gameId,
+               "winner_id": playerNum,
+               "loser_index": loserIndex
+        }
+      }).done(function(response){
+        window.location = "/games/" + gameId
+      })      
+    }
 
+    // Detect keyup event to trigger the other functions
+    $(document).keyup(function(event) {
+      if (event.keyCode === 81){
+        movePlayer(1);
+      }
+      else if (event.keyCode === 80) {
+        movePlayer(2);
+      }
+      if (hasWon(1)) {
+        alert("Player 1 has won!");
+        submitWinner(1);
+      }
+      else if (hasWon(2)) {
+        alert("Player 2 has won!");
+        submitWinner(2);
+      }
+    })
+  })
+</script>

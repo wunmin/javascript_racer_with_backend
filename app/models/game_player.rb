@@ -1,4 +1,4 @@
-class GamesPlayer < ActiveRecord::Base
+class GamePlayer < ActiveRecord::Base
   belongs_to :player
   belongs_to :game
   validate :not_more_than_two_players, on: :create
